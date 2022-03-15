@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  traefik:
+    image: "traefik:v2.5.5"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  plumber:
+    build:
+      context: .
+    command: "/app/plumber.R"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plumber.rule=Host(`localhost`)"
+      - "traefik.http.routers.plumber.entrypoints=web"
+      - "traefik.http.services.plumber.loadbalancer.server.port=8000"
